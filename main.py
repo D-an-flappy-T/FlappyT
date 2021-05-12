@@ -1,56 +1,128 @@
-import random
-import sys
-import pygame
+import pygame, sys, random
 from pygame.locals import *
 
-FPS = 32
-SCREENWIDTH = 289
-SCREENHEIGHT = 511
-SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
-GROUNDY = SCREENHEIGHT * 0.8
-GAME_SPRITES = {}
-GAME_SOUNDS = {}
-PLAYER = 'gallery/sprites/bird.png'
-BACKGROUND = 'gallery/sprites/background.png'
-PIPE = 'gallery/sprites/pipe.png'
+WINDOWWIDTH = 289
+WINDOWHEIGHT = 511
 
-def welcomeScreen():
-    """
-    Shows welcome images on the screen
-    """
+BIRDWIDTH = 60
+BIRDHEIGHT = 45
+G = 0.5
+SPEEDFLY = -8
+BIRDIMG = pygame.image.load('gallery/img/bird.png')
 
-    playerx = int(SCREENWIDTH/5)
-    playery = int((SCREENHEIGHT - GAME_SPRITES['player'].get_height())/2)
-    messagex = int((SCREENWIDTH - GAME_SPRITES['message'].get_width())/2)
-    messagey = int(SCREENHEIGHT*0.13)
-    basex = 0
+COLUMNWIDTH = 60
+COLUMNHEIGHT = 500
+BLANK = 160
+DISTANCE = 200
+COLUMNSPEED = 2
+COLUMNIMG = pygame.image.load('gallery/img/column.png')
+
+BACKGROUND = pygame.image.load('gallery/img/background.png')
+
+pygame.init()
+FPS = 60
+fpsClock = pygame.time.Clock()
+
+DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+pygame.display.set_caption('Flappy Bird')
+
+def main(): 
+    bird = Bird()
+    columns = Columns()
+    score = Score()
+
     while True:
+        mouseClick = False
         for event in pygame.event.get():
-            if event.type == QUIT or (event.type==KEYDOWN and event.key == K_ESCAPE):
+            if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == MOUSEBUTTONDOWN:
+                mouseClick = True
+        
+        DISPLAYSURF.blit(BACKGROUND, (0, 0))
 
-            elif event.type==KEYDOWN and (event.key==K_SPACE or event.key == K_UP):
-                return
-            else:
-                SCREEN.blit(GAME_SPRITES['background'], (0, 0))    
-                SCREEN.blit(GAME_SPRITES['player'], (playerx, playery))    
-                SCREEN.blit(GAME_SPRITES['message'], (messagex,messagey ))    
-                SCREEN.blit(GAME_SPRITES['base'], (basex, GROUNDY))    
-                pygame.display.update()
-                FPSCLOCK.tick(FPS)
+        bird.draw()
+        bird.update(mouseClick)
 
-]['y']},
-    ]
+        columns.draw()
+        columns.update()
 
-    pipeVelX = -4
+        pygame.display.update()
+        fpsClock.tick(FPS)
 
-    playerVelY = -9
-    playerMaxVelY = 10
-    playerMinVelY = -8
-    playerAccY = 1
+class Bird():
+    def __init__(self):
+        self.width = BIRDWIDTH
+        self.height = BIRDHEIGHT
+        self.x = (WINDOWWIDTH - self.width)/2
+        self.y = (WINDOWHEIGHT- self.height)/2
+        self.speed = 0
+        self.suface = BIRDIMG
+    def draw(self):
+        DISPLAYSURF.blit(self.suface, (int(self.x), int(self.y)))   
+    def update(self, mouseClick):
+        self.y += self.speed + 0.5*G
+        self.speed += G
+        if mouseClick == True:
+            self.speed = SPEEDFLY
 
-    playerFlapAccv = -8 
-    playerFlapped = False
+class Columns():
+    def __init__(self):
+        self.width = COLUMNWIDTH
+        self.height = COLUMNHEIGHT
+        self.blank = BLANK
+        self.distance = DISTANCE
+        self.speed = COLUMNSPEED
+        self.surface = COLUMNIMG
+        self.ls = []
+        for i in range(3):
+            x = i*self.distance
+            y = random.randrange(60, WINDOWHEIGHT - self.blank - 60, 20)
+            self.ls.append([x, y])       
+    def draw(self):
+        for i in range(3):
+            DISPLAYSURF.blit(self.surface, (self.ls[i][0], self.ls[i][1] - self.height))
+            DISPLAYSURF.blit(self.surface, (self.ls[i][0], self.ls[i][1] + self.blank))
+    def update(self):
+        for i in range(3):
+            self.ls[i][0] -= self.speed
+        if self.ls[0][0] < -self.width:
+            self.ls.pop(0)
+            x = self.ls[1][0] + self.distance
+            y = random.randrange(60, WINDOWHEIGHT - self.blank - 60, 10)
+            self.ls.append([x, y])
 
+def rectCollision(rect1, rect2):
+    if rect1[0] <= rect2[0]+rect2[2] and rect2[0] <= rect1[0]+rect1[2] and rect1[1] <= rect2[1]+rect2[3] and rect2[1] <= rect1[1]+rect1[3]:
+        return True
+    return False
+class Score():
+    def __init__(self):
+        self.score = 0
+        self.addScore = True
     
+    def draw(self):
+        font = pygame.font.SysFont('consolas', 40)
+        scoreSuface = font.render(str(self.score), True, (0, 0, 0))
+        textSize = scoreSuface.get_size()
+        DISPLAYSURF.blit(scoreSuface, (int((WINDOWWIDTH - textSize[0])/2), 100))
+    
+    def update(self, bird, columns):
+        collision = False
+        for i in range(3):
+            rectColumn = [columns.ls[i][0] + columns.width, columns.ls[i][1], 1, columns.blank]
+            rectBird = [bird.x, bird.y, bird.width, bird.height]
+            if rectCollision(rectBird, rectColumn) == True:
+                collision = True
+                break
+        if collision == True:
+            if self.addScore == True:
+                self.score += 1
+            self.addScore = False
+        else:
+            self.addScore = True
+
+        
+if __name__ == '__main__':
+    main()
