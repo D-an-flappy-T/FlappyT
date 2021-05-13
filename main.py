@@ -11,9 +11,9 @@ SPEEDFLY = -8
 BIRDIMG = pygame.image.load('gallery/img/bird.png')
 
 COLUMNWIDTH = 60
-COLUMNHEIGHT = 500
-BLANK = 160
-DISTANCE = 200
+COLUMNHEIGHT = 300
+BLANK = 170
+DISTANCE = 250
 COLUMNSPEED = 2
 COLUMNIMG = pygame.image.load('gallery/img/column.png')
 
@@ -101,6 +101,7 @@ def rectCollision(rect1, rect2):
     if rect1[0] <= rect2[0]+rect2[2] and rect2[0] <= rect1[0]+rect1[2] and rect1[1] <= rect2[1]+rect2[3] and rect2[1] <= rect1[1]+rect1[3]:
         return True
     return False
+
 def isGameOver(bird, columns):
     for i in range(3):
         rectBird = [bird.x, bird.y, bird.width, bird.height]
