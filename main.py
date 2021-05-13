@@ -4,8 +4,8 @@ from pygame.locals import *
 WINDOWWIDTH = 289
 WINDOWHEIGHT = 511
 
-BIRDWIDTH = 60
-BIRDHEIGHT = 45
+BIRDWIDTH = 20
+BIRDHEIGHT = 5
 G = 0.5
 SPEEDFLY = -8
 BIRDIMG = pygame.image.load('gallery/img/bird.png')
@@ -29,7 +29,7 @@ pygame.display.set_caption('Flappy Bird')
 def main(): 
     bird = Bird()
     columns = Columns()
-    score = Score()
+    
 
     while True:
         mouseClick = False
@@ -47,6 +47,10 @@ def main():
 
         columns.draw()
         columns.update()
+
+        if isGameOver(bird, columns) == True:
+            pygame.quit()
+            sys.exit()
 
         pygame.display.update()
         fpsClock.tick(FPS)
@@ -97,31 +101,16 @@ def rectCollision(rect1, rect2):
     if rect1[0] <= rect2[0]+rect2[2] and rect2[0] <= rect1[0]+rect1[2] and rect1[1] <= rect2[1]+rect2[3] and rect2[1] <= rect1[1]+rect1[3]:
         return True
     return False
-class Score():
-    def __init__(self):
-        self.score = 0
-        self.addScore = True
-    
-    def draw(self):
-        font = pygame.font.SysFont('consolas', 40)
-        scoreSuface = font.render(str(self.score), True, (0, 0, 0))
-        textSize = scoreSuface.get_size()
-        DISPLAYSURF.blit(scoreSuface, (int((WINDOWWIDTH - textSize[0])/2), 100))
-    
-    def update(self, bird, columns):
-        collision = False
-        for i in range(3):
-            rectColumn = [columns.ls[i][0] + columns.width, columns.ls[i][1], 1, columns.blank]
-            rectBird = [bird.x, bird.y, bird.width, bird.height]
-            if rectCollision(rectBird, rectColumn) == True:
-                collision = True
-                break
-        if collision == True:
-            if self.addScore == True:
-                self.score += 1
-            self.addScore = False
-        else:
-            self.addScore = True
+def isGameOver(bird, columns):
+    for i in range(3):
+        rectBird = [bird.x, bird.y, bird.width, bird.height]
+        rectColumn1 = [columns.ls[i][0], columns.ls[i][1] - columns.height, columns.width, columns.height]
+        rectColumn2 = [columns.ls[i][0], columns.ls[i][1] + columns.blank, columns.width, columns.height]
+        if rectCollision(rectBird, rectColumn1) == True or rectCollision(rectBird, rectColumn2) == True:
+            return True
+    if bird.y + bird.height < 0 or bird.y + bird.height > WINDOWHEIGHT:
+        return True
+    return False
 
         
 if __name__ == '__main__':
