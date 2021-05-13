@@ -8,7 +8,7 @@ BIRDWIDTH = 20
 BIRDHEIGHT = 5
 G = 0.5
 SPEEDFLY = -8
-BIRDIMG = pygame.image.load('gallery/img/bird.png')
+BIRDIMG = pygame.image.load('gallery/img/khunglong.png')
 
 COLUMNWIDTH = 60
 COLUMNHEIGHT = 300
