@@ -3,12 +3,19 @@ from pygame.locals import *
 
 WINDOWWIDTH = 289
 WINDOWHEIGHT = 511
+SCREEN = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+GROUNDY = WINDOWHEIGHT * 0.8
+GAME_GALLERY = {}
+GAME_SOUNDS = {}
+PLAYER = 'gallery/img/khunglong.png'
+BACKGROUND = 'gallery/img/background.png'
+PIPE = 'gallery/img/pipe.png'
 
-BIRDWIDTH = 20
-BIRDHEIGHT = 5
+DINOSAURWIDTH = 20
+DINOSAURHEIGHT = 5
 G = 0.5
 SPEEDFLY = -8
-BIRDIMG = pygame.image.load('gallery/img/khunglong.png')
+DINOSAURIMG = pygame.image.load('gallery/img/khunglong.png')
 
 COLUMNWIDTH = 60
 COLUMNHEIGHT = 300
@@ -20,17 +27,27 @@ COLUMNIMG = pygame.image.load('gallery/img/column.png')
 BACKGROUND = pygame.image.load('gallery/img/background.png')
 
 pygame.init()
-FPS = 60
+FPS = 50
 fpsClock = pygame.time.Clock()
 
 DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
-pygame.display.set_caption('Flappy Bird')
+pygame.display.set_caption('Flappy Dinosaur')
+
 
 def main(): 
-    bird = Bird()
+    dinosaur = Dinosaur()
     columns = Columns()
+    score = Score()
     
+    while True:
+        gameStart(dinosaur)
+        gamePlay(dinosaur, columns, score)
 
+def gamePlay(dinosaur, columns, score):
+    dinosaur.__init__()
+    dinosaur.speed = SPEEDFLY
+    columns.__init__()
+    score.__init__()
     while True:
         mouseClick = False
         for event in pygame.event.get():
@@ -41,28 +58,80 @@ def main():
                 mouseClick = True
         
         DISPLAYSURF.blit(BACKGROUND, (0, 0))
-
-        bird.draw()
-        bird.update(mouseClick)
-
         columns.draw()
         columns.update()
+        dinosaur.draw()
+        dinosaur.update(mouseClick)
+        score.draw()
+        score.update(dinosaur, columns)
 
-        if isGameOver(bird, columns) == True:
-            pygame.quit()
-            sys.exit()
+        if isGameOver(dinosaur, columns) == True:
+            return
 
         pygame.display.update()
         fpsClock.tick(FPS)
 
-class Bird():
+def gameStart(dinosaur):
+    dinosaur.__init__()
+
+    font = pygame.font.SysFont('consolas', 40)
+    headingSuface = font.render('Flappy T-rex', True, (255, 0, 0))
+    headingSize = headingSuface.get_size()
+    
+    font = pygame.font.SysFont('consolas', 20)
+    commentSuface = font.render('Click to start', True, (0, 255, 0))
+    commentSize = commentSuface.get_size()
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == MOUSEBUTTONDOWN:
+                return
+
+        DISPLAYSURF.blit(BACKGROUND, (0, 0))
+        dinosaur.draw()
+        DISPLAYSURF.blit(headingSuface, (int((WINDOWWIDTH - headingSize[0])/2), 80))
+        DISPLAYSURF.blit(commentSuface, (int((WINDOWWIDTH - commentSize[0])/2), 400))
+
+        pygame.display.update()
+        fpsClock.tick(FPS)
+
+class Score():
     def __init__(self):
-        self.width = BIRDWIDTH
-        self.height = BIRDHEIGHT
+        self.score = 0
+        self.addScore = True
+    
+    def draw(self):
+        font = pygame.font.SysFont('consolas', 60)
+        scoreSuface = font.render(str(self.score), True, (0, 255, 0))
+        textSize = scoreSuface.get_size()
+        DISPLAYSURF.blit(scoreSuface, (int((WINDOWWIDTH - textSize[0])/2), 60))
+    
+    def update(self, dinosaur, columns):
+        collision = False
+        for i in range(3):
+            rectColumn = [columns.ls[i][0] + columns.width, columns.ls[i][1], 1, columns.blank]
+            rectBird = [dinosaur.x, dinosaur.y, dinosaur.width, dinosaur.height]
+            if rectCollision(rectBird, rectColumn) == True:
+                collision = True
+                break
+        if collision == True:
+            if self.addScore == True:
+                self.score += 1
+            self.addScore = False
+        else:
+            self.addScore = True
+
+class Dinosaur():
+    def __init__(self):
+        self.width = DINOSAURWIDTH
+        self.height = DINOSAURHEIGHT
         self.x = (WINDOWWIDTH - self.width)/2
         self.y = (WINDOWHEIGHT- self.height)/2
         self.speed = 0
-        self.suface = BIRDIMG
+        self.suface = DINOSAURIMG
     def draw(self):
         DISPLAYSURF.blit(self.suface, (int(self.x), int(self.y)))   
     def update(self, mouseClick):
@@ -102,14 +171,14 @@ def rectCollision(rect1, rect2):
         return True
     return False
 
-def isGameOver(bird, columns):
+def isGameOver(dinosaur, columns):
     for i in range(3):
-        rectBird = [bird.x, bird.y, bird.width, bird.height]
+        rectBird = [dinosaur.x, dinosaur.y, dinosaur.width, dinosaur.height]
         rectColumn1 = [columns.ls[i][0], columns.ls[i][1] - columns.height, columns.width, columns.height]
         rectColumn2 = [columns.ls[i][0], columns.ls[i][1] + columns.blank, columns.width, columns.height]
         if rectCollision(rectBird, rectColumn1) == True or rectCollision(rectBird, rectColumn2) == True:
             return True
-    if bird.y + bird.height < 0 or bird.y + bird.height > WINDOWHEIGHT:
+    if dinosaur.y + dinosaur.height < 0 or dinosaur.y + dinosaur.height > WINDOWHEIGHT:
         return True
     return False
 
