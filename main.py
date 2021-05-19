@@ -1,15 +1,17 @@
+'''
+Import thư viện để sử dụng code
+'''
 import pygame, sys, random
 from pygame.locals import *
 
+'''
+Khai báo các biến định dạng màn hình, tài nguyên trong game
+Vẽ nền cho game
+'''
+
 WINDOWWIDTH = 289
 WINDOWHEIGHT = 511
-SCREEN = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
-GROUNDY = WINDOWHEIGHT * 0.8
-GAME_GALLERY = {}
-GAME_SOUNDS = {}
-PLAYER = 'gallery/img/khunglong.png'
-BACKGROUND = 'gallery/img/background.png'
-PIPE = 'gallery/img/pipe.png'
+
 
 DINOSAURWIDTH = 20
 DINOSAURHEIGHT = 5
@@ -27,14 +29,17 @@ COLUMNIMG = pygame.image.load('gallery/img/column.png')
 BACKGROUND = pygame.image.load('gallery/img/background.png')
 
 pygame.init()
-FPS = 50
+FPS = 60
 fpsClock = pygame.time.Clock()
 
 DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Flappy Dinosaur')
 
 
-def main(): 
+def main():
+    '''
+    Gán biến cho class và khai báo ra hàm gameStart cũng như game play
+    '''
     dinosaur = Dinosaur()
     columns = Columns()
     score = Score()
@@ -44,6 +49,11 @@ def main():
         gamePlay(dinosaur, columns, score)
 
 def gamePlay(dinosaur, columns, score):
+    '''
+    Khai báo giá trị của từng class
+    Tạo vòng lặp game và bắt sự kiện MOUSEBUTTONDOWN trong vòng lặp game
+    Cho hàm isGameOver vào để kết thúc game khi xảy ra va chạm
+    '''
     dinosaur.__init__()
     dinosaur.speed = SPEEDFLY
     columns.__init__()
@@ -72,6 +82,9 @@ def gamePlay(dinosaur, columns, score):
         fpsClock.tick(FPS)
 
 def gameStart(dinosaur):
+    '''
+    Tạo màn hình đầu game trước khi bắt đầu trò chơi 
+    '''
     dinosaur.__init__()
 
     font = pygame.font.SysFont('consolas', 40)
@@ -125,6 +138,11 @@ class Score():
             self.addScore = True
 
 class Dinosaur():
+    '''
+    Khai báo giá trị của class
+    Vẽ nhân vật lên màn hình game
+    Tạo hàm chuyển động rơi xuống và bắt sự kiện mouseClick để bay lên
+    '''
     def __init__(self):
         self.width = DINOSAURWIDTH
         self.height = DINOSAURHEIGHT
@@ -141,6 +159,11 @@ class Dinosaur():
             self.speed = SPEEDFLY
 
 class Columns():
+    '''
+    Khai báo giá trị của class cho 3 cột 
+    Vẽ 3 cột lên màn hình game
+    Tạo chuyển động cho cột di chuyển sang trái sau đó xóa cột đi ra khỏi màn hình và tạo cột mới
+    '''
     def __init__(self):
         self.width = COLUMNWIDTH
         self.height = COLUMNHEIGHT
@@ -167,11 +190,17 @@ class Columns():
             self.ls.append([x, y])
 
 def rectCollision(rect1, rect2):
+    '''
+    Hàm kiểm tra va chạm theo hình chữ nhật
+    '''
     if rect1[0] <= rect2[0]+rect2[2] and rect2[0] <= rect1[0]+rect1[2] and rect1[1] <= rect2[1]+rect2[3] and rect2[1] <= rect1[1]+rect1[3]:
         return True
     return False
 
 def isGameOver(dinosaur, columns):
+    '''
+    Hàm kiểm tra gameover
+    '''
     for i in range(3):
         rectBird = [dinosaur.x, dinosaur.y, dinosaur.width, dinosaur.height]
         rectColumn1 = [columns.ls[i][0], columns.ls[i][1] - columns.height, columns.width, columns.height]
