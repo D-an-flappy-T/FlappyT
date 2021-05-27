@@ -112,6 +112,9 @@ def gameStart(dinosaur):
         fpsClock.tick(FPS)
 
 class Score():
+    '''
+    Tính điểm nếu không bị va chạm
+    '''
     def __init__(self):
         self.score = 0
         self.addScore = True
@@ -136,7 +139,6 @@ class Score():
             self.addScore = False
         else:
             self.addScore = True
-
 class Dinosaur():
     '''
     Khai báo giá trị của class
@@ -188,7 +190,6 @@ class Columns():
             x = self.ls[1][0] + self.distance
             y = random.randrange(60, WINDOWHEIGHT - self.blank - 60, 10)
             self.ls.append([x, y])
-
 def rectCollision(rect1, rect2):
     '''
     Hàm kiểm tra va chạm theo hình chữ nhật
